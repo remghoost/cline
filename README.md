@@ -65,15 +65,17 @@ I would highly recommend building it yourself though.
 
 ---
 
-## **I believe the system prompt could be improved further and the MCP server calls be reimplemented.**
+## **I believe the system prompt could be improved further and the MCP server calls be reimplemented for "weaker" models.**
 
 I currently do not use MCP servers (I couldn't get them to work on my end), so this change doesn't limit the abilities of the extension for my use cases.
 
-I'd gesture that the MCP server information (how to call them, how to make them, etc), could be pushed to its own script, only being referenced when necessary (with relevant changes to the system prompt to inform the model that this is the case). Preferably with the creation and usage in separate scripts. I've noticed that LLMs tend to get confused when there's code in the context that it's not directly referencing.
+I'd gesture that all of the MCP server prompts (how to create them, how to call them, etc) should be moved outside of the main system prompt and only called when necessary. I need to read up a bit more on Typescript before I attempt that though.
+
+Information about _creating_ MCP servers should only be injected when necessary (and possibly removed from the context after their successful creation).
+
+I've personally found that LLMs can get a bit confused when there's code in the context that is not currently "necessary".
 
 I'll have to look into how things are being called from the system prompt. It looks like it has something to do with the `${cwd.toPosix()}` chunks. Typescript isn't my strongest language.
-
-The system prompt is also still a bit bloated (in my opinion at least). A lot of the language could still be trimmed down and take a more "direct" form of communication.
 
 ---
 
@@ -89,6 +91,26 @@ The third change probably requires backend changes, not system prompt changes. I
 It also might be good to build a separate version of the extension for non-claude models. I know the goal is to have a "one size fits all" extension, but that might not be possible.
 
 Or perhaps have an entirely different system prompt depending on the model...? That seems more feasible.
+
+---
+
+## Other considerations
+
+I also believe the main system prompt could be tightened up in general (just my two cents, of course).
+The language seems a bit too "conversational" and I think it could be rephrased to be more "direct".
+
+This line is a good example.
+https://github.com/cline/cline/blob/6764a5cdec131e25fd9ef0eebdd993aabb5317f3/src/core/prompts/system.ts#L39
+
+Phrases like:
+- "Use this when you need to perform system operations..." 
+
+should be adjusted to something like: 
+- "This is used when performing system operations...".
+
+Language like this indicates specific usage and implications of the tool, as opposed to the current phrasing which is more "subjective", requiring the model to infer a bunch of things already stated in the system prompt (what a tool is, how they are used, etc).
+
+The adjustment might seem subtle at first glance, but it's alters the prompt from a "subjective" stance to an "objective" stance. I've personally found that models perform markedly better when prompting in this manner, removing as much wiggle room in interpretation as possible.
 
 ---
 

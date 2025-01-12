@@ -1,8 +1,99 @@
+<<<<<<< HEAD
 <div align="center"><sub>
 English | <a href="https://github.com/cline/cline/blob/main/locales/es/README.md" target="_blank">Español</a> | <a href="https://github.com/cline/cline/blob/main/locales/de/README.md" target="_blank">Deutsch</a> | <a href="https://github.com/cline/cline/blob/main/locales/ja/README.md" target="_blank">日本語</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-cn/README.md" target="_blank">简体中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-tw/README.md" target="_blank">繁體中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/ko/README.md" target="_blank">한국어</a>
 </sub></div>
 
 # Cline – \#1 on OpenRouter
+=======
+## Changes from original repo
+
+There was some jank when running `npm run test` which required running these commands before being able to build properly:
+
+-  `npm install --save-dev rewire`
+- `cd .\webview-ui\`
+- `npm install react-scripts`
+
+I still can't get the test to work properly, but it builds fine via this command:
+
+- `npx vsce package`
+
+No clue why, but it works.  
+Probably an issue on my end.
+
+---
+
+This is a work-in-progress test and is not intended to be merged into `main`.
+
+## **The primary change was in `/src/core/prompts/system.ts`.**
+
+As per [this issue comment](https://github.com/cline/cline/issues/1195#issuecomment-2578310501), I noticed that the system prompt was rather large (around 11.5k tokens), which can confuse "weaker" models.
+
+**I removed all mentions of MCP servers and readjusted the system prompt to use a more standard markdown formatting.**
+
+This brings the initial system prompt down to around 6.5k tokens.
+
+**I have also included a "forced" user prompt, which is this:**
+```
+replace_in_file needs to be formatted exactly like this:
+
+<<<<<<< SEARCH
+[exact content to find]
+=======
+[new content to replace with]
+>>>>>>> REPLACE
+
+Every single block of search/replace must be complete or the task will fail. This is very important.
+
+Search only for the specific line you want to change, not an entire block. Code changed with this tool should be limited to one line at a time per search/replace function.
+
+Do not try to search/replace any comments.
+```
+
+**Search/replace functionality seems to improved *drastically* due to these changes. At least 95% of my `replace_in_file` calls succeed now (as opposed to all of them failing prior), with only ones above the context window of the model being flaky (but still succeeding more often than not.)**
+
+The model still does not want to follow the "one change per line" request 100% of the time, but that doesn't seem to matter. It helps to promote that suggestion though and seems to push the model towards that output.
+
+This was tested with `mistral-large-latest` via Mistral's free/experimental API, using `https://api.braintrust.dev/v1/proxy`.
+
+I'd imagine it would work with other models as well.
+
+---
+
+I've included a built version in the releases, if you want to try it for yourself without having to build it.
+
+I would highly recommend building it yourself though.
+
+---
+
+## **I believe the system prompt could be improved further and the MCP server calls be reimplemented.**
+
+I currently do not use MCP servers (I couldn't get them to work on my end), so this change doesn't limit the abilities of the extension for my use cases.
+
+I'd gesture that the MCP server information (how to call them, how to make them, etc), could be pushed to its own script, only being referenced when necessary (with relevant changes to the system prompt to inform the model that this is the case). Preferably with the creation and usage in separate scripts. I've noticed that LLMs tend to get confused when there's code in the context that it's not directly referencing.
+
+I'll have to look into how things are being called from the system prompt. It looks like it has something to do with the `${cwd.toPosix()}` chunks. Typescript isn't my strongest language.
+
+The system prompt is also still a bit bloated (in my opinion at least). A lot of the language could still be trimmed down and take a more "direct" form of communication.
+
+---
+
+## Other possible changes I'm considering
+
+- Pushing the system prompt file out to an editable configuration file (instead of being built into the extension).
+- Forcing the system prompt again when above the context window of the model.
+
+- Forcing search/replace functionality to include indentations (currently search/replace in python is agonizing, requiring multiple calls to fix indentation issues, which can confuse the model).
+
+The third change probably requires backend changes, not system prompt changes. I'll have to do more research into that.
+
+It also might be good to build a separate version of the extension for non-claude models. I know the goal is to have a "one size fits all" extension, but that might not be possible.
+
+Or perhaps have an entirely different system prompt depending on the model...? That seems more feasible.
+
+---
+
+# Cline (prev. Claude Dev) – \#1 on OpenRouter
+>>>>>>> 90d7afc4 (initial changes)
 
 <p align="center">
   <img src="https://media.githubusercontent.com/media/cline/cline/main/assets/docs/demo.gif" width="100%" />
